@@ -24,11 +24,13 @@ private:
 
 	void RegisterMenus();
 	void BindCommands();
+	void OpenSetting() const;
 
 	void LangSwitcher() const;
-	void RestartEditor();
-	
-	
+	void RestartEditor() const;
+	void OpenGitHubUrl() const;
+	bool HandleSettingsSaved();
+
 	TSharedRef< class SWidget > GenerateComboMenu(TSharedPtr<class FUICommandList> InCommands);
 	 void OnToorBarButtonClick() const;
 
