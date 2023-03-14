@@ -22,6 +22,11 @@ public:
 	TSharedPtr< FUICommandInfo > PluginAction;
 
 	/**
+	 * 重启编辑器.
+	 */
+	TSharedPtr< FUICommandInfo > Settings;
+
+	/**
 	 * 中英文切换.
 	 */
 	TSharedPtr< FUICommandInfo > LangSwitcher;
@@ -31,5 +36,8 @@ public:
 	 */
 	TSharedPtr< FUICommandInfo > ResetEditor;
 	
-	
+	/**
+	 * 重启编辑器.
+	 */
+	TSharedPtr< FUICommandInfo > GitHubUrl;
 };

@@ -3,7 +3,10 @@
 #include "ADTools.h"
 #include "ADToolsStyle.h"
 #include "ADToolsCommands.h"
+#include "ADToolsSettings.h"
 #include "EditorStyleSet.h"
+#include "ISettingsModule.h"
+#include "ISettingsSection.h"
 #include "LevelEditor.h"
 #include "Misc/MessageDialog.h"
 #include "ToolMenus.h"
@@ -21,6 +24,24 @@ void FADToolsModule::StartupModule()
 	FADToolsStyle::Initialize();
 	FADToolsStyle::ReloadTextures();
 
+	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
+	if (SettingsModule != nullptr)
+	{
+		ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings("Project", "Plugins", "AD Tools",
+			LOCTEXT("AdToolsSetting", "AD Tools"),
+			LOCTEXT("AdToolsSettingDescription", "Configure the AD Tools plug-in."),
+			GetMutableDefault<UADToolsSettings>()
+		);
+		
+		if (SettingsSection.IsValid())
+		{
+			SettingsSection->OnModified().BindRaw(this, &FADToolsModule::HandleSettingsSaved);
+		}
+
+	}
+
+	
+
 	FADToolsCommands::Register();
 	BindCommands();
 
@@ -32,6 +53,13 @@ void FADToolsModule::ShutdownModule()
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->UnregisterSettings("Project", "Plugins", "Unworld Editor");
+		SettingsModule->UnregisterSettings("Project", "Plugins", "UWPreviz");
+
+	}
+	
 	UToolMenus::UnRegisterStartupCallback(this);
 
 	UToolMenus::UnregisterOwner(this);
@@ -127,7 +155,10 @@ void FADToolsModule::BindCommands()
 	FUICommandList& ActionList = *ADToolsCommands;
 
 
-
+	ActionList.MapAction(
+				FADToolsCommands::Get().Settings,
+				FExecuteAction::CreateRaw(this, &FADToolsModule::OpenSetting),
+				FCanExecuteAction());
 
 	ActionList.MapAction(
 			FADToolsCommands::Get().PluginAction,
@@ -146,11 +177,20 @@ void FADToolsModule::BindCommands()
 		Commands.ResetEditor,
 		FExecuteAction::CreateRaw(this, &FADToolsModule::RestartEditor),
 		FCanExecuteAction());
+	//打开链接地址
+	ActionList.MapAction(
+		Commands.GitHubUrl,
+		FExecuteAction::CreateRaw(this, &FADToolsModule::OpenGitHubUrl),
+		FCanExecuteAction());
 
+	
 	//AddPIEPreviewDeviceActions(Commands, ActionList);
 	
 }
-
+void FADToolsModule::OpenSetting() const
+{
+	
+}
 void FADToolsModule::LangSwitcher() const
 {
 	const bool isCN = FInternationalization::Get().GetCurrentLanguage()->GetName()=="zh-hans";
@@ -167,11 +207,19 @@ void FADToolsModule::LangSwitcher() const
 	
 }
 
-void FADToolsModule::RestartEditor()
+void FADToolsModule::RestartEditor() const
 {
 	FUnrealEdMisc::Get().RestartEditor((true));
 }
 
+void FADToolsModule::OpenGitHubUrl() const
+{
+	FPlatformProcess::LaunchURL(TEXT("https://github.com/wzxdev/ADTools"), NULL, NULL);
+}
+bool FADToolsModule::HandleSettingsSaved()
+{
+	return true;
+}
 TSharedRef<SWidget> FADToolsModule::GenerateComboMenu(TSharedPtr<FUICommandList> InCommands)
 {
 	//注册UWEditorButton
@@ -183,10 +231,13 @@ TSharedRef<SWidget> FADToolsModule::GenerateComboMenu(TSharedPtr<FUICommandList>
 	MenuBuilder.BeginSection("ADToolsMenu", TAttribute<FText>(FText::FromString("ADToolsMenu")));
 
 	
+	MenuBuilder.AddMenuEntry(FADToolsCommands::Get().Settings);
+	MenuBuilder.AddMenuSeparator();
 	MenuBuilder.AddMenuEntry(FADToolsCommands::Get().LangSwitcher);
 	MenuBuilder.AddMenuSeparator();
 	MenuBuilder.AddMenuEntry(FADToolsCommands::Get().ResetEditor);
-
+	MenuBuilder.AddMenuSeparator();
+	MenuBuilder.AddMenuEntry(FADToolsCommands::Get().GitHubUrl);
 	MenuBuilder.EndSection();
 	
 	return MenuBuilder.MakeWidget();
