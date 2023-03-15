@@ -4,6 +4,7 @@
 #include "ADToolsStyle.h"
 #include "ADToolsCommands.h"
 #include "ADToolsSettings.h"
+#include "EditorMetadataOverrides.h"
 #include "EditorStyleSet.h"
 #include "ISettingsModule.h"
 #include "ISettingsSection.h"
@@ -69,19 +70,6 @@ void FADToolsModule::ShutdownModule()
 	FADToolsCommands::Unregister();
 }
 
-void FADToolsModule::PluginButtonClicked()
-{
-	// Put your "OnButtonClicked" stuff here
-	FText DialogText = FText::Format(
-							LOCTEXT("PluginButtonDialogText", "Add code to {0} in {1} to override this button's actions"),
-							FText::FromString(TEXT("FADToolsModule::PluginButtonClicked()")),
-							FText::FromString(TEXT("ADTools.cpp"))
-					   );
-	FMessageDialog::Open(EAppMsgType::Ok, DialogText);
-}
-
-
-
 void FADToolsModule::RegisterMenus()
 {
 	// Owner will be used for cleanup in call to UToolMenus::UnregisterOwner
@@ -89,8 +77,16 @@ void FADToolsModule::RegisterMenus()
 
 	auto OnGetToolbarButtonBrushLambda = [this]() -> const FSlateIcon
 	{
+		
+		
+		return FSlateIcon(FADToolsStyle::GetStyleSetName(),FName(*FString::FromInt(iconIndex)));
+		
+		/*if(bRedIcon)
+		{
+			return FSlateIcon(FADToolsStyle::GetStyleSetName(),FName(*FString::FromInt(bRedIcon)));
+		}
 		//根据状态,获取Icon
-		return FSlateIcon(FADToolsStyle::GetStyleSetName(), "UnworldEditor.Unworld");
+		return FSlateIcon(FADToolsStyle::GetStyleSetName(), "ADTools.PluginAction");*/
 	};
 	
 	{
@@ -162,7 +158,7 @@ void FADToolsModule::BindCommands()
 
 	ActionList.MapAction(
 			FADToolsCommands::Get().PluginAction,
-			FExecuteAction::CreateRaw(this, &FADToolsModule::PluginButtonClicked),
+			FExecuteAction::CreateRaw(this, &FADToolsModule::OnToorBarButtonClick),
 			FCanExecuteAction());
 
 	
@@ -232,7 +228,6 @@ TSharedRef<SWidget> FADToolsModule::GenerateComboMenu(TSharedPtr<FUICommandList>
 
 	
 	MenuBuilder.AddMenuEntry(FADToolsCommands::Get().Settings);
-	MenuBuilder.AddMenuSeparator();
 	MenuBuilder.AddMenuEntry(FADToolsCommands::Get().LangSwitcher);
 	MenuBuilder.AddMenuSeparator();
 	MenuBuilder.AddMenuEntry(FADToolsCommands::Get().ResetEditor);
@@ -245,6 +240,15 @@ TSharedRef<SWidget> FADToolsModule::GenerateComboMenu(TSharedPtr<FUICommandList>
 
 void FADToolsModule::OnToorBarButtonClick() const
 {
+
+	//bRedIcon = !bRedIcon;
+	iconIndex++;
+	if(iconIndex > 36)
+	{
+		iconIndex = 0;
+	}
+
+	
 	// Put your "OnButtonClicked" stuff here
 	const FText DialogText = FText::Format(
 							LOCTEXT("PluginButtonDialogText", "Add code to {0} in {1} to override this button's actions"),
