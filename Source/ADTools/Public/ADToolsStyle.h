@@ -21,6 +21,8 @@ public:
 
 	static FName GetStyleSetName();
 
+	static TArray<FName> icons;
+
 private:
 
 	static TSharedRef< class FSlateStyleSet > Create();

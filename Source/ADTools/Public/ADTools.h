@@ -16,9 +16,11 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 	
-	/** This function will be bound to Command. */
-	void PluginButtonClicked();
 
+
+	inline static bool bRedIcon = false;
+
+	inline static int iconIndex;
 	
 private:
 
@@ -36,5 +38,7 @@ private:
 
 private:
 
+	
+	
 	TSharedPtr<FUICommandList> ADToolsCommands;
 };
