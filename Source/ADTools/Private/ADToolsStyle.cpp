@@ -66,9 +66,6 @@ TSharedRef< FSlateStyleSet > FADToolsStyle::Create()
 	{
 		Style->Set(Icon, new IMAGE_BRUSH_SVG(FText::FromName(Icon).ToString(), Icon20x20));
 	}*/
-
-
-	
 	
 	//Style->Set("ADTools.PluginAction", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
 	return Style;

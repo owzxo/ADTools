@@ -25,7 +25,9 @@ public class ADTools : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+				"Core", 
+				"Json", 
+				"JsonUtilities",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -34,16 +36,28 @@ public class ADTools : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+				"MeshDescription", // Generated meshes -> static meshes
+				"ViewportInteraction",
+				"VREditor",
+				
 				"Projects",
 				"InputCore",
 				"EditorFramework",
 				"UnrealEd",
+				"Sockets", // tcp stuff
+				"Networking", // tcp stuff
+				"HTTPServer",
+				"MaterialEditor",
 				"ToolMenus",
 				"CoreUObject",
 				"Engine",
 				"Slate",
 				"SlateCore",
 				"EditorStyle",
+				"Json", 
+				"JsonUtilities",
+				"ViewportInteraction",
+				"RHI", // holds definitions of shit like this: GMaxRHIFeatureLevel
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
