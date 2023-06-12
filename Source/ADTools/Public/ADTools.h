@@ -8,6 +8,7 @@
 class FToolBarBuilder;
 class FMenuBuilder;
 
+DECLARE_LOG_CATEGORY_EXTERN(LogADTools, Log, All);
 class FADToolsModule : public IModuleInterface
 {
 public:
@@ -26,14 +27,14 @@ private:
 
 	void RegisterMenus();
 	void BindCommands();
-	void OpenSetting() const;
 
 	void LangSwitcher() const;
 	void RestartEditor() const;
 	void OpenGitHubUrl() const;
-	bool HandleSettingsSaved();
+	void OpenSettings() const;
+	bool HandleSettingsSaved() const;
 
-	TSharedRef< class SWidget > GenerateComboMenu(TSharedPtr<class FUICommandList> InCommands);
+	TSharedRef< class SWidget > GenerateComboMenu(TSharedPtr<class FUICommandList> InCommands) const;
 	 void OnToorBarButtonClick() const;
 
 private:

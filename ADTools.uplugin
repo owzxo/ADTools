@@ -18,7 +18,7 @@
 		{
 			"Name": "ADTools",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PostEngineInit"
 		}
 	]
 }

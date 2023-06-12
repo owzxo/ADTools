@@ -13,10 +13,16 @@
 #include "ToolMenus.h"
 #include "Internationalization/Culture.h"
 #include "Kismet/KismetInternationalizationLibrary.h"
+#include "Network/TCPManager.h"
+#include "Network/HttpManager.h"
+
 
 static const FName ADToolsTabName("ADTools");
 
 #define LOCTEXT_NAMESPACE "FADToolsModule"
+
+
+DEFINE_LOG_CATEGORY(LogADTools);
 
 void FADToolsModule::StartupModule()
 {
@@ -28,9 +34,9 @@ void FADToolsModule::StartupModule()
 	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
 	if (SettingsModule != nullptr)
 	{
-		ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings("Project", "Plugins", "AD Tools",
-			LOCTEXT("AdToolsSetting", "AD Tools"),
-			LOCTEXT("AdToolsSettingDescription", "Configure the AD Tools plug-in."),
+		const ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings("Project", "Plugins", ADToolsTabName,
+			LOCTEXT("AdToolsSetting", "ADTools"),
+			LOCTEXT("AdToolsSettingDescription", "Configure the ADTools plug-in."),
 			GetMutableDefault<UADToolsSettings>()
 		);
 		
@@ -41,8 +47,9 @@ void FADToolsModule::StartupModule()
 
 	}
 
-	
-
+	LaunchTCP();
+	//LaunchHttp();
+	StartHttpServer();
 	FADToolsCommands::Register();
 	BindCommands();
 
@@ -69,6 +76,7 @@ void FADToolsModule::ShutdownModule()
 
 	FADToolsCommands::Unregister();
 }
+
 
 void FADToolsModule::RegisterMenus()
 {
@@ -105,10 +113,10 @@ void FADToolsModule::RegisterMenus()
 			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
 			{
 
-				Section.AddDynamicEntry("ADTools", FNewToolMenuSectionDelegate::CreateLambda([&](FToolMenuSection& InDynamicSection)
+				Section.AddDynamicEntry(ADToolsTabName, FNewToolMenuSectionDelegate::CreateLambda([&](FToolMenuSection& InDynamicSection)
 				{
 					InDynamicSection.AddEntry(FToolMenuEntry::InitToolBarButton(
-								"ADTools",
+								ADToolsTabName,
 								FUIAction(FExecuteAction::CreateRaw(this,&FADToolsModule::OnToorBarButtonClick)),
 								LOCTEXT("ADTools", "ADTools"),
 								LOCTEXT("ADTools Tip", "ADTools Tip."),
@@ -144,7 +152,7 @@ void FADToolsModule::BindCommands()
 {
 	check(!ADToolsCommands.IsValid());
 
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+	const FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 	ADToolsCommands = LevelEditorModule.GetGlobalLevelEditorActions();
 	
 	const FADToolsCommands& Commands = FADToolsCommands::Get();
@@ -153,7 +161,7 @@ void FADToolsModule::BindCommands()
 
 	ActionList.MapAction(
 				FADToolsCommands::Get().Settings,
-				FExecuteAction::CreateRaw(this, &FADToolsModule::OpenSetting),
+				FExecuteAction::CreateRaw(this, &FADToolsModule::OpenSettings),
 				FCanExecuteAction());
 
 	ActionList.MapAction(
@@ -183,15 +191,12 @@ void FADToolsModule::BindCommands()
 	//AddPIEPreviewDeviceActions(Commands, ActionList);
 	
 }
-void FADToolsModule::OpenSetting() const
-{
-	
-}
+
 void FADToolsModule::LangSwitcher() const
 {
-	const bool isCN = FInternationalization::Get().GetCurrentLanguage()->GetName()=="zh-hans";
+	const bool bIsCn = FInternationalization::Get().GetCurrentLanguage()->GetName()=="zh-hans";
 	
-	if(isCN)
+	if(bIsCn)
 	{
 		UKismetInternationalizationLibrary::SetCurrentLanguage("en",true);
 	}
@@ -210,13 +215,25 @@ void FADToolsModule::RestartEditor() const
 
 void FADToolsModule::OpenGitHubUrl() const
 {
-	FPlatformProcess::LaunchURL(TEXT("https://github.com/wzxdev/ADTools"), NULL, NULL);
+	FPlatformProcess::LaunchURL(TEXT("https://github.com/wzxdev/ADTools"), nullptr, nullptr);
 }
-bool FADToolsModule::HandleSettingsSaved()
+
+void FADToolsModule::OpenSettings() const
+{
+#if WITH_EDITOR
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		
+		SettingsModule->ShowViewer("Project", "Plugins", ADToolsTabName);
+	}
+#endif
+}
+
+bool FADToolsModule::HandleSettingsSaved() const
 {
 	return true;
 }
-TSharedRef<SWidget> FADToolsModule::GenerateComboMenu(TSharedPtr<FUICommandList> InCommands)
+TSharedRef<SWidget> FADToolsModule::GenerateComboMenu(TSharedPtr<FUICommandList> InCommands) const
 {
 	//注册UWEditorButton
 	UToolMenus::Get()->RegisterMenu("LevelEditor.LevelEditorToolBar.ADToolsButton");
